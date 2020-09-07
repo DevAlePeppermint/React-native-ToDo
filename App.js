@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, StatusBar, TouchableOpacity, FlatList, Modal, TextInput } from 'react-native';
+import React, { useState, useCallback, useEffect } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, StatusBar, TouchableOpacity, FlatList, Modal, TextInput, AsyncStorage } from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import TaskList from './src/components/TaskList/index';
 import * as Animatable from 'react-native-animatable';
@@ -10,13 +10,59 @@ const AnimatedBtn = Animatable.createAnimatableComponent(TouchableOpacity);
 
 export default function App() {
 
-  const[task, setTask] = useState([
-
-  ]);
+  const[task, setTask] = useState([]);
 
   const [open, setOpen] = useState(false);
 
   const[input, setInput] = useState('');
+
+
+//buscando tarefas ao iniciar app
+  useEffect(() => {
+
+    async function loadTasks(){
+      const taskStorage =  await AsyncStorage.getItem('@task');
+
+      if(taskStorage){
+        setTask(JSON.parse(taskStorage));
+      }
+    }
+
+    loadTasks();
+
+  }, []);
+
+
+//salvando caso tenha alguma tarefa alterada
+  useEffect(() => {
+    async function saveTasks(){
+
+      await AsyncStorage.setItem('@task', JSON.stringify(task));
+    }
+
+    saveTasks();
+
+  }, [task]);
+
+  function handleAdd(){
+    if (input === '') return;
+
+    const data = {
+      key: input,
+      task: input
+    };
+
+    setTask([...task, data]);
+    setOpen(false);
+    setInput('');
+
+  }
+
+  const handleDelete = useCallback((data) => {
+    const find = task.filter(r => r.key !== data.key);
+    setTask(find);
+
+  })
 
   return(
     <SafeAreaView style ={styles.container}>
@@ -33,8 +79,7 @@ export default function App() {
         showsHorizontalScrollIndicator={false} //barra de rolagem do lado (false:desabity)
         data={task}
         keyExtractor={(item) => String(item.key)}
-        renderItem={ ({item}) => <TaskList data={item} /> }
-
+        renderItem={ ({item}) => <TaskList data={item} handleDelete={handleDelete} /> }
       />
       
       <AnimatedBtn 
@@ -78,7 +123,7 @@ export default function App() {
 
             />
 
-            <TouchableOpacity style={styles.addBtn}>
+            <TouchableOpacity style={styles.addBtn} onPress={ handleAdd}>
               <Text style={styles.addBtnText}>Cadastrar</Text>
             </TouchableOpacity>
 
