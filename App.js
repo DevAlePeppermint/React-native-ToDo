@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, StatusBar, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, StatusBar, TouchableOpacity, FlatList, Modal, TextInput } from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import TaskList from './src/components/TaskList/index';
 import * as Animatable from 'react-native-animatable';
@@ -11,14 +11,12 @@ const AnimatedBtn = Animatable.createAnimatableComponent(TouchableOpacity);
 export default function App() {
 
   const[task, setTask] = useState([
-    {key: 1, task: 'Comprar pão'},
-    {key: 2, task: 'Comprar leite'},
-    {key: 3, task: 'Comprar uva'},
-    {key: 4, task: 'Comprar chucrute'},
-    {key: 5, task: 'Comprar ervilha'},
-
 
   ]);
+
+  const [open, setOpen] = useState(false);
+
+  const[input, setInput] = useState('');
 
   return(
     <SafeAreaView style ={styles.container}>
@@ -37,20 +35,59 @@ export default function App() {
         keyExtractor={(item) => String(item.key)}
         renderItem={ ({item}) => <TaskList data={item} /> }
 
-      
       />
       
-
-
       <AnimatedBtn 
       style={styles.fab}
       useNativeDriver
       animation="bounceInUp"
       duration={1500}
+      onPress={() => setOpen(true)}
       >
         <Ionicons name="ios-add" size={35} color="#fff"/>
 
       </AnimatedBtn>
+
+      <Modal
+        animationType ="slide"
+        transparent={false}
+        visible={open}
+      >
+        <SafeAreaView style={styles.modal}>
+
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setOpen(false) }>
+
+              <Ionicons name="md-arrow-back" size={40} color="#FFF" style={{marginLeft:12, marginRight: 10}}/>
+
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>
+              Nova Tarefa
+            </Text>
+          </View>
+
+          <Animatable.View style={styles.modalBody} animation="fadeInUp" useNativeDriver> 
+            <TextInput
+              multiline={true}
+              placeholderTextColor="#747474"
+              autoCorrect={false}
+              placeholder='O que precisa fazer hoje?'
+              style={styles.input}
+              value={input}
+              onChangeText={(texto) => setInput(texto)}
+
+            />
+
+            <TouchableOpacity style={styles.addBtn}>
+              <Text style={styles.addBtnText}>Cadastrar</Text>
+            </TouchableOpacity>
+
+          </Animatable.View>
+
+
+        </SafeAreaView>
+
+      </Modal>
 
     
 
@@ -98,11 +135,54 @@ const styles = StyleSheet.create({
       width:1,
       height:3,
     }
+  },
+  
+  modal:{
+    flex:1,
+    backgroundColor:'#171D31',
+  },
+  modalHeader:{
+    flexDirection: 'row',
+    alignItems:'center',
+    marginTop: 12,
+    marginLeft: 10
 
+  },
+  modalTitle:{
+    color: 'white',
+    fontSize: 20,
+  },
 
+  modalBody:{
+    marginTop: 15,
+  },
 
+  input:{
+    fontSize: 15,
+    marginLeft:10,
+    marginRight:10,
+    marginTop:30,
+    backgroundColor:'#fff',
+    borderRadius:8,
+    padding: 9,
+    height:85,
+    textAlignVertical:'top',
+    color:'#000'    
+  },
+
+  addBtn:{
+    backgroundColor:'#FFF',
+    marginTop: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+    marginRight:10,
+    borderRadius: 8,
+    height:45,
+  },
+  addBtnText:{
+    fontSize: 20
   }
-
 
 
 })
